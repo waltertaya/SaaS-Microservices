@@ -9,10 +9,10 @@ import (
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
-	protected := r.Group("/api/v2/billing")
+	protected := r.Group("")
 	protected.Use(middlewares.AuthMiddleware())
 	protected.POST("/subscribe", controllers.Subscribe)
-	protected.GET("subscriptions", controllers.GetSubscriptions)
+	protected.GET("/subscriptions", controllers.GetSubscriptions)
 
 	return r
 }

@@ -12,6 +12,7 @@ services:
       - "5433:5432"
     volumes:
       - auth-db-data:/var/lib/postgresql/data
+      - ./auth-service/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
 
   # Postgres for Billing Service
   billing-db:
@@ -24,6 +25,7 @@ services:
       - "5434:5432"
     volumes:
       - billing-db-data:/var/lib/postgresql/data
+      - ./billing-service/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
 
   # Auth Service
   auth-service:
@@ -52,6 +54,15 @@ services:
       - DB_USER=postgres
       - DB_PASSWORD=postgres
       - DB_NAME=billing_db
+
+# API Gateway
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8088:8088"
+    depends_on:
+      - auth-service
+      - billing-service
 
 volumes:
   auth-db-data:

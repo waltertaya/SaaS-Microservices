@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -24,7 +25,17 @@ func Connect() error {
 	)
 
 	var err error
-	DB, err = sqlx.Connect("postgres", dsn)
+	// DB, err = sqlx.Connect("postgres", dsn)
 
-	return err
+	// var err error
+	for i := 1; i <= 10; i++ {
+		DB, err = sqlx.Connect("postgres", dsn)
+		if err == nil {
+			return nil
+		}
+		fmt.Printf("DB connect attempt %d failed: %v; retrying in 2s\n", i, err)
+		time.Sleep(2 * time.Second)
+	}
+
+	return fmt.Errorf("could not connect after retries: %w", err)
 }

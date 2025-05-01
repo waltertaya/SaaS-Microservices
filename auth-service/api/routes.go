@@ -8,11 +8,11 @@ import (
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
-	r.POST("/api/v2/auth/register", controllers.Register)
-	r.POST("/api/v2/auth/login", controllers.Login)
+	r.POST("/register", controllers.Register)
+	r.POST("/login", controllers.Login)
 
 	// Test simple protected user profile
-	protected := r.Group("/api/v2/user")
+	protected := r.Group("")
 	protected.Use(middlewares.AuthMiddleware())
 	protected.GET("/profile", controllers.Profile)
 
