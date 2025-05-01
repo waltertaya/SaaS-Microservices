@@ -47,6 +47,11 @@ func main() {
 	initConfig()
 	r := gin.Default()
 
+	// simple ping route
+	r.GET("/healthz", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
 	// Route /api/v2/auth/* to auth-service
 	r.Any("/api/v2/auth/*proxyPath", reverseProxy("http://auth-service:8080"))
 
