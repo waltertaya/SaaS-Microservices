@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -10,6 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"github.com/waltertaya/saas-microservices/api-gateway/middlewares"
+	"github.com/waltertaya/saas-microservices/api-gateway/utils"
+	"go.uber.org/zap"
 )
 
 func initConfig() {
@@ -27,7 +30,6 @@ func initConfig() {
 func reverseProxy(target string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		remote, err := url.Parse(target)
-
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusBadGateway, gin.H{
 				"error": "Bad upstream",
@@ -37,15 +39,47 @@ func reverseProxy(target string) gin.HandlerFunc {
 
 		proxy := httputil.NewSingleHostReverseProxy(remote)
 
-		ctx.Request.URL.Path = ctx.Param("proxyPath") // strip /api/v2/auth or /api/v2/billing
+		// Inject trace ID into the request context for upstream & error handling
+		traceID, exists := ctx.Get("trace_id")
+		if exists {
+			ctx.Request = ctx.Request.WithContext(
+				context.WithValue(ctx.Request.Context(), "trace_id", traceID),
+			)
+		}
 
+		// Custom error handler to log upstream errors
+		proxy.ErrorHandler = func(rw http.ResponseWriter, req *http.Request, err error) {
+			traceVal := req.Context().Value("trace_id")
+			traceID := "unknown"
+			if traceVal != nil {
+				traceID = traceVal.(string)
+			}
+
+			utils.Logger.Error("proxy error",
+				zap.String("trace_id", traceID),
+				zap.String("target", target),
+				zap.Error(err),
+			)
+
+			rw.WriteHeader(http.StatusBadGateway)
+			rw.Write([]byte("Upstream service error"))
+		}
+
+		// Modify the request path (preserve your logic)
+		ctx.Request.URL.Path = ctx.Param("proxyPath")
+
+		// Forward to upstream
 		proxy.ServeHTTP(ctx.Writer, ctx.Request)
 	}
 }
 
 func main() {
 	initConfig()
+	utils.InitLogger()
 	r := gin.Default()
+
+	r.Use(gin.Recovery())        // error recovery
+	r.Use(utils.RequestLogger()) // Add logging
 
 	// simple ping route
 	r.GET("/healthz", func(c *gin.Context) {

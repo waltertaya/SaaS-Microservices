@@ -43,6 +43,7 @@ func JWTMiddleware() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Access restricted to premium users"})
 			return
 		}
+		c.Set("user_id", role)
 
 		c.Next()
 	}
