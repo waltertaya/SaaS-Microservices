@@ -92,3 +92,15 @@ func Login(ctx *gin.Context) {
 		"token": token,
 	})
 }
+
+// simple protected test route
+func Profile(ctx *gin.Context) {
+	userID := ctx.GetInt("user_id")
+	role := ctx.GetString("role")
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Welcome to your profile",
+		"user_id": userID,
+		"role":    role,
+	})
+}
