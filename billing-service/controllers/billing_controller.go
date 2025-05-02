@@ -9,6 +9,7 @@ import (
 	"github.com/waltertaya/saas-microservices/billing-service/models"
 )
 
+// should be created immediately user is registered
 func Subscribe(ctx *gin.Context) {
 	var input struct {
 		Plan string `json:"plan"`

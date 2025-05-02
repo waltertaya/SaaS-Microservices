@@ -120,6 +120,32 @@ func VerifyPayment(c *gin.Context) {
 			return
 		}
 
+		// update the user subcription to premium upon verificatio
+
+		var subcription models.Subscription
+		// get the whole subscription object
+		query := `SELECT * FROM subcriptions WHERE user_id=$1`
+		err = db.DB.Get(&subcription, query, userID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "failed to fetching subscription",
+			})
+			return
+		}
+		// update the object now
+		subcription.Plan = "premium"
+		subcription.Status = "active"
+		subcription.StartDate = time.Now()
+		subcription.EndDate = time.Now().AddDate(0, 1, 0) // one month from now
+		query = `UPDATE subcriptions SET plan=$1, status=$2, start_date=$3, end_date=$4 WHERE user_id=$5`
+		_, err = db.DB.Exec(query, subcription.Plan, subcription.Status, subcription.StartDate, subcription.EndDate, userID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "failed to update subscription",
+			})
+			return
+		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"message":     "Payment verified and saved",
 			"transaction": transaction,
