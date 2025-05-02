@@ -123,7 +123,7 @@ func VerifyPayment(c *gin.Context) {
 		// update the user subcription to premium upon verificatio
 
 		var subcription models.Subscription
-		// get the whole subscription object
+		// get the whole subscription
 		query := `SELECT * FROM subcriptions WHERE user_id=$1`
 		err = db.DB.Get(&subcription, query, userID)
 		if err != nil {
@@ -132,7 +132,7 @@ func VerifyPayment(c *gin.Context) {
 			})
 			return
 		}
-		// update the object now
+		// update the sub
 		subcription.Plan = "premium"
 		subcription.Status = "active"
 		subcription.StartDate = time.Now()
