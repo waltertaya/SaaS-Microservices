@@ -38,12 +38,24 @@ func JWTMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		role, ok := claims["role"].(string)
-		if !ok || role != "premium" {
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Access restricted to premium users"})
+		userIDFloat, ok := claims["user_id"].(float64)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid user_id in token"})
 			return
 		}
-		c.Set("user_id", role)
+		userID := int(userIDFloat)
+		c.Set("user_id", userID)
+
+		// debugging
+		// fmt.Printf("User ID: %v\n", userID)
+		// fmt.Println("Claims", claims)
+
+		// bug: role return either user or admin
+		// role, ok := claims["role"].(string)
+		// if !ok || role != "basic" { // change back to premium
+		// 	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Access restricted to premium users"})
+		// 	return
+		// }
 
 		c.Next()
 	}

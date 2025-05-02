@@ -27,6 +27,10 @@ func initConfig() {
 	}
 }
 
+type contextKey string
+
+const traceIDKey contextKey = "trace_id"
+
 func reverseProxy(target string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		remote, err := url.Parse(target)
@@ -43,7 +47,7 @@ func reverseProxy(target string) gin.HandlerFunc {
 		traceID, exists := ctx.Get("trace_id")
 		if exists {
 			ctx.Request = ctx.Request.WithContext(
-				context.WithValue(ctx.Request.Context(), "trace_id", traceID),
+				context.WithValue(ctx.Request.Context(), traceIDKey, traceID),
 			)
 		}
 
@@ -87,13 +91,15 @@ func main() {
 	})
 
 	// Route /api/v2/auth/* to auth-service
-	r.Any("/api/v2/auth/*proxyPath", reverseProxy("http://auth-service:8080"))
+	// r.Any("/api/v2/auth/*proxyPath", reverseProxy("http://auth-service:8080"))
+	r.Any("/api/v2/auth/*proxyPath", reverseProxy("http://localhost:8080"))
 
 	// billing (with JWT)
 	billingGroup := r.Group("/api/v2/billing")
 	billingGroup.Use(middlewares.JWTMiddleware())
 	// Route /api/v2/billing/* to billing-service
-	billingGroup.Any("/*proxyPath", reverseProxy("http://billing-service:8081"))
+	// billingGroup.Any("/*proxyPath", reverseProxy("http://billing-service:8081"))
+	billingGroup.Any("/*proxyPath", reverseProxy("http://localhost:8081"))
 
 	// API Gateway entrypoint
 	r.Run(":8088")

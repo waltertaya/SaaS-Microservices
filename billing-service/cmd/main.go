@@ -5,9 +5,11 @@ import (
 	"log"
 	"strings"
 
+	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 	"github.com/waltertaya/saas-microservices/billing-service/api"
 	"github.com/waltertaya/saas-microservices/billing-service/db"
+	"github.com/waltertaya/saas-microservices/billing-service/jobs"
 )
 
 func initConfig() {
@@ -18,6 +20,11 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalf("Error reading config file: %v", err)
 	}
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 }
 
 func main() {
@@ -27,6 +34,8 @@ func main() {
 		log.Fatalf("Failed to connect to DB: %v", err)
 	}
 	fmt.Println("Billing DB connected ✅")
+
+	jobs.StartRetryWorker()
 
 	r := api.SetupRouter()
 

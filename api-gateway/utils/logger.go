@@ -48,7 +48,7 @@ func RequestLogger() gin.HandlerFunc {
 		method := c.Request.Method
 		path := c.Request.URL.Path
 		clientIP := c.ClientIP()
-		userID := c.GetString("user_id")
+		uid := c.GetInt("user_id") // solve the user_id bug
 
 		Logger.Info("request",
 			zap.String("trace_id", traceID),
@@ -57,7 +57,7 @@ func RequestLogger() gin.HandlerFunc {
 			zap.Int("status", status),
 			zap.Duration("duration", duration),
 			zap.String("client_ip", clientIP),
-			zap.String("user_id", userID),
+			zap.Int("user_id", uid),
 		)
 	}
 }
