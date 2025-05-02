@@ -4,10 +4,10 @@ server:
 jwt:
   secret: c39eaa8c-dca9-47dc-a928-3a1624aaa5c2
 
-# database:
-#   host: localhost
-#   port: 5432
-#   user: waltertaya
-#   password: Walter_8236!
-#   dbname: saas_auth_db
-#   sslmode: disable
+database:
+  host: localhost
+  port: 5432
+  user: waltertaya
+  password: Walter_8236!
+  dbname: saas_auth_db
+  sslmode: disable

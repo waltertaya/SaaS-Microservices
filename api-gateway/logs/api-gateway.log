@@ -1,0 +1,5 @@
+{"level":"error","timestamp":"2025-05-02T03:13:06.308+0300","msg":"proxy error","trace_id":"9db40828-438a-4626-8153-2411a236dc18","target":"http://auth-service:8080","error":"dial tcp: lookup auth-service on 127.0.0.53:53: server misbehaving"}
+{"level":"info","timestamp":"2025-05-02T03:13:06.309+0300","msg":"request","trace_id":"9db40828-438a-4626-8153-2411a236dc18","method":"POST","path":"/login","status":502,"duration":0.000989226,"client_ip":"::1","user_id":""}
+{"level":"error","timestamp":"2025-05-02T03:14:22.462+0300","msg":"proxy error","trace_id":"925af014-99ee-4985-9d18-8153c3070279","target":"http://auth-service:8080","error":"dial tcp: lookup auth-service on 127.0.0.53:53: server misbehaving"}
+{"level":"info","timestamp":"2025-05-02T03:14:22.462+0300","msg":"request","trace_id":"925af014-99ee-4985-9d18-8153c3070279","method":"POST","path":"/register","status":502,"duration":0.000935319,"client_ip":"::1","user_id":""}
+{"level":"info","timestamp":"2025-05-02T03:19:04.054+0300","msg":"request","trace_id":"17f48157-a3c7-49f7-92b2-853c7ff0aca2","method":"POST","path":"/register","status":502,"duration":0.001279019,"client_ip":"::1","user_id":""}
