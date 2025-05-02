@@ -13,7 +13,8 @@ import (
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
-	// protected routes
+	// protected routes: ADD ROUTES TO PROTECT ACCORDING TO THE USER'S PLAN (basic, premium) OR ROLE (user, admin)
+	// change the logic in the AuthMidleware
 	protected := r.Group("")
 	protected.Use(middlewares.AuthMiddleware())
 	protected.GET("/transactions", func(c *gin.Context) {

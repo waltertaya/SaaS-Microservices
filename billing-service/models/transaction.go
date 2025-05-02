@@ -8,4 +8,5 @@ type Transaction struct {
 	Status          string `db:"status" json:"status"`
 	CustomerEmail   string `db:"customer_email" json:"customer_email"`
 	TransactionDate string `db:"transaction_date" json:"transaction_date"`
+	UserID          string `db:"user_id" json:"user_id"`
 }

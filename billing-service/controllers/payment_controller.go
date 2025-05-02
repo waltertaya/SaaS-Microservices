@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -27,6 +28,8 @@ func InitiatePayment(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
+
+	req.Amount = "200"
 
 	client := resty.New()
 
@@ -67,6 +70,7 @@ func InitiatePayment(c *gin.Context) {
 
 func VerifyPayment(c *gin.Context) {
 	transactionID := c.Query("transaction_id")
+	userID := strconv.Itoa(c.GetInt("user_id"))
 	if transactionID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "missing transaction id"})
 		return
@@ -96,6 +100,7 @@ func VerifyPayment(c *gin.Context) {
 		customer := data["customer"].(map[string]interface{})
 
 		transaction := models.Transaction{
+			UserID:        userID,
 			TransactionID: transactionID,
 			TxRef:         fmt.Sprintf("%v", data["tx_ref"]),
 			Amount:        fmt.Sprintf("%v", data["amount"]),
