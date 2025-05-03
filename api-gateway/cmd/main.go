@@ -69,7 +69,7 @@ func reverseProxy(target string) gin.HandlerFunc {
 			rw.Write([]byte("Upstream service error"))
 		}
 
-		// Modify the request path (preserve your logic)
+		// Modify the request path (retain my original logic) : bug
 		ctx.Request.URL.Path = ctx.Param("proxyPath")
 
 		// Forward to upstream
