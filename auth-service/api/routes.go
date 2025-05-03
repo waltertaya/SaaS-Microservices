@@ -14,10 +14,12 @@ func SetupRouter() *gin.Engine {
 	r.POST("/verify-otp", controllers.VerifyOTP)
 	r.POST("/reset-password", controllers.ResetPassword)
 
-	// Test simple protected user profile
+	// Protected routes
 	protected := r.Group("")
 	protected.Use(middlewares.AuthMiddleware())
 	protected.GET("/profile", controllers.Profile)
+	protected.PUT("/profile", controllers.UpdateProfile)
+	protected.DELETE("/profile", controllers.DeleteProfile)
 
 	return r
 }
