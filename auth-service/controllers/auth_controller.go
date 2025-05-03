@@ -51,7 +51,7 @@ func Register(ctx *gin.Context) {
 
 func Login(ctx *gin.Context) {
 	var input struct {
-		Email    string `json:"email"`
+		Username string `json:"username"`
 		Password string `json:"password"`
 	}
 	if err := ctx.ShouldBindJSON(&input); err != nil {
@@ -63,8 +63,8 @@ func Login(ctx *gin.Context) {
 
 	var user models.User
 
-	query := `SELECT * FROM users WHERE email=$1`
-	err := db.DB.Get(&user, query, input.Email)
+	query := `SELECT * FROM users WHERE username=$1`
+	err := db.DB.Get(&user, query, input.Username)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"error": "Invalid credentials",
@@ -90,6 +90,115 @@ func Login(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"token": token,
+	})
+}
+
+// forgot password and send email
+func ForgotPassword(ctx *gin.Context) {
+	var input struct {
+		Username string `json:"username"`
+	}
+	err := ctx.ShouldBindJSON(&input)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	var user models.User
+	query := `SELECT * FROM users WHERE username=$1`
+	err = db.DB.Get(&user, query, input.Username)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Username not found",
+		})
+		return
+	}
+
+	var otp string
+	otp, err = utils.GenerateOTP(user.Username)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to generate OTP",
+		})
+		return
+	}
+	err = utils.SendEmail(user.Email, otp)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to send email",
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "OTP sent to your email",
+	})
+}
+
+// verify OTP
+func VerifyOTP(ctx *gin.Context) {
+	var input struct {
+		Username string `json:"username"`
+		OTP      string `json:"otp"`
+	}
+	err := ctx.ShouldBindJSON(&input)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	valid, err := utils.ValidateOTP(input.Username, input.OTP)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to validate OTP",
+		})
+		return
+	}
+	if !valid {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid OTP",
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "OTP verified successfully",
+	})
+}
+
+// reset password
+func ResetPassword(ctx *gin.Context) {
+	var input struct {
+		Username    string `json:"username"`
+		NewPassword string `json:"new_password"`
+	}
+	err := ctx.ShouldBindJSON(&input)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to hash password",
+		})
+		return
+	}
+
+	query := `UPDATE users SET password=$1 WHERE username=$2`
+	_, err = db.DB.Exec(query, hashedPassword, input.Username)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to update password",
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Password reset successfully",
 	})
 }
 
